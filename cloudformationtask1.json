@@ -1,0 +1,479 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Reusable CloudFormation template to create two VPCs with NAT Gateways.",
+  "Parameters": {
+    "Vpc1CidrBlock": {
+      "Type": "String",
+      "Default": "10.0.0.0/16",
+      "Description": "CIDR block for the VPC1"
+    },
+    "Vpc2CidrBlock": {
+      "Type": "String",
+      "Default": "10.1.0.0/16",
+      "Description": "CIDR block for the VPC2"
+    },
+    "EnableDnsSupport": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "true",
+      "Description": "Enable DNS support for the VPC"
+    },
+    "EnableDnsHostnames": {
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "true",
+      "Description": "Enable DNS hostnames for the VPC"
+    }
+  },
+  "Resources": {
+    "VPC1": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "Vpc1CidrBlock"
+        },
+        "EnableDnsSupport": {
+          "Ref": "EnableDnsSupport"
+        },
+        "EnableDnsHostnames": {
+          "Ref": "EnableDnsHostnames"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC1"
+          }
+        ]
+      }
+    },
+    "VPC2": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "Vpc2CidrBlock"
+        },
+        "EnableDnsSupport": {
+          "Ref": "EnableDnsSupport"
+        },
+        "EnableDnsHostnames": {
+          "Ref": "EnableDnsHostnames"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC2"
+          }
+        ]
+      }
+    },
+    "VPC1PublicSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "CidrBlock": "10.0.1.0/24"
+      }
+    },
+    "VPC1PublicSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "CidrBlock": "10.0.2.0/24"
+      }
+    },
+    "VPC1PrivateSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "CidrBlock": "10.0.3.0/24"
+      }
+    },
+    "VPC1PrivateSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "CidrBlock": "10.0.4.0/24"
+      }
+    },
+    "VPC2PublicSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "CidrBlock": "10.1.1.0/24"
+      }
+    },
+    "VPC2PublicSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "CidrBlock": "10.1.2.0/24"
+      }
+    },
+    "VPC2PrivateSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "CidrBlock": "10.1.3.0/24"
+      }
+    },
+    "VPC2PrivateSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "CidrBlock": "10.1.4.0/24"
+      }
+    },
+    "VPC1InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC1-IGW"
+          }
+        ]
+      }
+    },
+    "VPC2InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC2-IGW"
+          }
+        ]
+      }
+    },
+    "AttachIGWToVPC1": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "InternetGatewayId": {
+          "Ref": "VPC1InternetGateway"
+        }
+      }
+    },
+    "AttachIGWToVPC2": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "InternetGatewayId": {
+          "Ref": "VPC2InternetGateway"
+        }
+      }
+    },
+    "VPC1PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC1-Public-RT"
+          }
+        ]
+      }
+    },
+    "VPC1PrivateRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC1-Private-RT"
+          }
+        ]
+      }
+    },
+    "VPC2PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC2-Public-RT"
+          }
+        ]
+      }
+    },
+    "VPC2PrivateRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC2"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC2-Private-RT"
+          }
+        ]
+      }
+    },
+    "VPC1PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "AttachIGWToVPC1",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VPC1PublicRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "VPC1InternetGateway"
+        }
+      }
+    },
+    "VPC2PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "AttachIGWToVPC2",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VPC2PublicRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "VPC2InternetGateway"
+        }
+      }
+    },
+    "VPC1EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "VPC1NatGateway": {
+      "Type": "AWS::EC2::NatGateway",
+      "DependsOn": "AttachIGWToVPC1",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "VPC1EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "VPC1PublicSubnet1"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC1-NATGW"
+          }
+        ]
+      }
+    },
+    "VPC1PrivateRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VPC1PrivateRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "VPC1NatGateway"
+        }
+      }
+    },
+    "VPC2EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "VPC2NatGateway": {
+      "Type": "AWS::EC2::NatGateway",
+      "DependsOn": "AttachIGWToVPC2",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "VPC2EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "VPC2PublicSubnet1"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "VPC2-NATGW"
+          }
+        ]
+      }
+    },
+    "VPC2PrivateRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VPC2PrivateRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "VPC2NatGateway"
+        }
+      }
+    },
+    "VPC1PublicSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC1PublicSubnet1"
+        },
+        "RouteTableId": {
+          "Ref": "VPC1PublicRouteTable"
+        }
+      }
+    },
+    "VPC1PublicSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC1PublicSubnet2"
+        },
+        "RouteTableId": {
+          "Ref": "VPC1PublicRouteTable"
+        }
+      }
+    },
+    "VPC1PrivateSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC1PrivateSubnet1"
+        },
+        "RouteTableId": {
+          "Ref": "VPC1PrivateRouteTable"
+        }
+      }
+    },
+    "VPC1PrivateSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC1PrivateSubnet2"
+        },
+        "RouteTableId": {
+          "Ref": "VPC1PrivateRouteTable"
+        }
+      }
+    },
+    "VPC2PublicSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC2PublicSubnet1"
+        },
+        "RouteTableId": {
+          "Ref": "VPC2PublicRouteTable"
+        }
+      }
+    },
+    "VPC2PublicSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC2PublicSubnet2"
+        },
+        "RouteTableId": {
+          "Ref": "VPC2PublicRouteTable"
+        }
+      }
+    },
+    "VPC2PrivateSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC2PrivateSubnet1"
+        },
+        "RouteTableId": {
+          "Ref": "VPC2PrivateRouteTable"
+        }
+      }
+    },
+    "VPC2PrivateSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "VPC2PrivateSubnet2"
+        },
+        "RouteTableId": {
+          "Ref": "VPC2PrivateRouteTable"
+        }
+      }
+    },
+    "VPCPeeringConnection": {
+      "Type": "AWS::EC2::VPCPeeringConnection",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC1"
+        },
+        "PeerVpcId": {
+          "Ref": "VPC2"
+        }
+      }
+    },
+    "VPC1RouteToVPC2": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VPC1PrivateRouteTable"
+        },
+        "DestinationCidrBlock": {
+          "Ref": "Vpc2CidrBlock"
+        },
+        "VpcPeeringConnectionId": {
+          "Ref": "VPCPeeringConnection"
+        }
+      }
+    },
+    "VPC2RouteToVPC1": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VPC2PrivateRouteTable"
+        },
+        "DestinationCidrBlock": {
+          "Ref": "Vpc1CidrBlock"
+        },
+        "VpcPeeringConnectionId": {
+          "Ref": "VPCPeeringConnection"
+        }
+      }
+    }
+  }
+}
