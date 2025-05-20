@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Test') {
       steps {
-        echo '✅ Jenkinsfile is working with a defined stage!'
+        ech '✅ Jenkinsfile is working with a defined stage!'
         sh 'ls -l'
       }
     }
